@@ -1,0 +1,91 @@
+* Task 12: Simulation
+** Av chemnitz, till de som inte kan bra språk
+
+** Standard libraries used:
+#+BEGIN_SRC c
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <unistd.h>
+#+END_SRC
+
+** Defintions & Macros
+*** Definitions of specific values
+Similiar to global variables in terrible languages.
+#+BEGIN_SRC c
+  #define SIZE 5
+  #define ALIVE 1
+  #define DEAD 0
+  #define LENGTH SIZE * SIZE
+#+END_SRC
+
+*** Macros
+Macros to clean up the code, (for once).
+#+BEGIN_SRC c
+  #define X_FOR     for(int x = 0; x < SIZE; x++)
+  #define Y_FOR     for(int y = 0; y < SIZE; y++)
+  #define XY_FOR    X_FOR Y_FOR
+  #define FOR_ARR   for(int i = 0; i < LENGTH; i++)
+  #define ID(x, y)  (x + SIZE * y)
+#+END_SRC
+
+** Functions
+*** printArray
+Function to print arrays as a matrix to terminal.
+Has no return type and takes a integer pointer as parameter.
+#+BEGIN_SRC c
+  void
+  printArray(int* a) {
+    fputc('\n', stdout);
+    Y_FOR {
+      X_FOR printf("%d ", a[ID(x, y)]);
+      fputc('\n', stdout); }
+  }
+#+END_SRC
+
+*** evolve
+Function to evolve and apply the rules of Conway's Game of Life to array.
+Has no return value and has integer pointer as paramater.
+#+BEGIN_SRC c
+  void
+  evolve(int* a) {
+    int x, y, i, j, n, index, neighbour;
+    int* r = calloc(LENGTH * sizeof(int), LENGTH);
+    XY_FOR {
+      index = ID(x, y);
+      n = 0;
+      for(i = x - 1; i <= x + 1; i++)
+      for(j = y - 1; j <= y + 1; j++) {
+        neightbour = ID(i, j);
+        if(x % 5 == 0 && i == x - 1) continue;
+        if(x % 5 == 4 && i == x + 1) continue;
+        if((i == x && j == y) || a[neighbour] == DEAD) continue;
+        n++;
+      }
+      if(n == 3 || (n == 2 && a[index] == 1)) r[index] = ALIVE;
+      else if(n > 3 && a[index] == 1) r[index] = DEAD;
+    }
+    FOR_ARR a[i] = r[i];
+    free(r);
+  }
+#+END_SRC
+
+*** main
+Main program like wtf?
+#+BEGIN_SRC c
+  int
+  main() {
+    int* c = malloc(LENGTH * sizeof(int));
+    long long unsigned step = 0;
+    FOR_ARR c[i] = rand() % 2;
+
+    while(1) {
+      system("clear");
+      printf("Array of step %llu\n", step);
+      printArray(c);
+      evolve(c);
+      step++;
+      sleep(1);
+    }
+    return 0;
+  }
+#+END_SRC
