@@ -5,60 +5,68 @@
 #define Y_FOR for(int y = 0; y < ROW; y++)
 #define XY_FOR X_FOR Y_FOR
 #define YX_FOR Y_FOR X_FOR
+#define ID(x, y) (x + COL * y);
 
-#define ROW 7
-#define COL 7
 
-int 
-aliveCells(int a[ROW][COL], int y, int x) {
-  int i, j, count = 0;
-  for(i = y - 1; i <= y + 1; i++)
-  for(j = x - 1; j <= x + 1; j++) {
-    if((i == y && j == x) || (i < 0 || y < 0) || (i >= ROW || j >= COL)) continue;
-    if(a[i][j] == 1) count++;
-  }
-  return count;
-}
+#define ROW 5
+#define COL 5
+#define ALIVE 1
+#define DEAD 0
 
 void
-printArray(int a[ROW][COL]) {
+printArray(int* a) {
+  fputc('\n', stdout);
   for(int y = 0; y < ROW; y++) {
-    X_FOR printf("%d ", a[y][x]);
+    X_FOR printf("%d ", a[x + COL * y]);
   fputc('\n', stdout);
   }
 }
 
+void
+evolve(int* a) {
+  int x, y, i, j, n, index, neighbour;
+  int* r;
+  r = calloc(ROW * COL * sizeof(int), ROW * COL);
+
+  int* t;
+  t = calloc(25 * sizeof(int), 25);
+
+  for(x = 0; x < COL; x++)
+    for(y = 0; y < ROW; y++) {
+      index = ID(x, y);
+      n = 0;
+      for(i = x - 1; i <= x + 1; i++) 
+        for(j = y - 1; j <= y + 1; j++) {
+          if(x % 5 == 0 && i == x - 1) continue;
+          if(x % 5 == 4 && i == x + 1) continue;
+          neighbour = ID(i, j); 
+          if((i == x && j == y) || a[neighbour] == DEAD) continue;
+          n++;
+        }
+      
+      if(n == 3 || (n == 2 && a[index] == 1)) r[index] = ALIVE;
+      else if(n > 3 && a[index] == 1) r[index] = DEAD;
+
+      t[x + COL * y] = n;
+    }
+
+  printArray(t);
+  free(t);
+
+  for(i = 0; i < COL * ROW; i++)
+    a[i] = r[i];
+  
+  free(r);
+}
+
 int 
 main(){
-    int a[ROW][COL], b[ROW][COL];
-    int i,j;
-    int neighbour_live_cell;
-
-    YX_FOR a[y][x] = rand() % 2;
-
-    printf("Initial Stage:\n");
-    printArray(a);
- 
-    for(i=0; i<ROW; i++){
-        for(j=0;j<COL;j++){
-            neighbour_live_cell = aliveCells(a,i,j);
-            if(a[i][j]==1 && (neighbour_live_cell==2 || neighbour_live_cell==3)){
-                b[i][j]=1;
-            }
- 
-            else if(a[i][j]==0 && neighbour_live_cell==3){
-                b[i][j]=1;
-            }
- 
-            else{
-                b[i][j]=0;
-            }
-        }
-    }
- 
-    //print next generation
-    printf("\nNext Generation:\n");
-    printArray(b);
- 
+    int* c;
+    c = malloc(COL * ROW * sizeof(int));
+    XY_FOR c[x + COL * y] = rand() % 2;
+    printArray(c);
+    evolve(c);
+    printf("\n");
+    printArray(c);
     return 0;
 }
